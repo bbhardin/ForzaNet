@@ -5,6 +5,7 @@ from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from random import randint
+import matplotlib as plt
 
 from game import controlled_run
 
@@ -18,17 +19,19 @@ DOUBLE_JUMP = 4
 
 PERFECT_SCORE = 1000
 
-total_number_of_games = 2000
+total_number_of_games = 200
 games_count = 0
 
 x_train = np.array([])
 y_train = np.array([])
 
-train_frequency = 120   # If we assume 60 fps (which is unlikely on Xbox cloud, this is every 2 seconds)
+train_frequency = 10   # If we assume 60 fps (which is unlikely on Xbox cloud, this is every 2 seconds)
 
+# Simple linear classification with 2 layers
 model = Sequential()
+#input_tensor = keras.layers.Normalization(input_shape=[5,], axis=None) # Define the input shape
 model.add(Dense(1, input_dim=1, activation='sigmoid'))
-model.add(Dense(2, activation='softmax'))
+model.add(Dense(5, activation='softmax'))
 model.compile(Adam(lr=0.1), loss='categorical_crossentropy', metrics=['accuracy'])
 
 # So I think right now I'm predicting jump or don't jump; 1 or 0. But really I want to be predicting 
@@ -37,20 +40,61 @@ model.compile(Adam(lr=0.1), loss='categorical_crossentropy', metrics=['accuracy'
 # To test a simple version of this, I'll start by creating a double_jump function
 
 
+# matplot functions
+fig, _ = plt.subplot(ncols=1, nrows=3, figsize=(6, 6))
+fig.tight_layout()
+
+all_scores = []
+avg_scores = []
+avg_score_rate = []
+all_x, all_y = np.array([]), np.array([])
+
+
 class Wrapper(object):
   
   def __init__(self):
     print("Started the game")
-    # TODO: Start the game
     controlled_run(self, 0)
-    #controlled_run(self, 0)
+
+  @staticmethod
+  def visualize():
+    global all_x
+    global all_y
+    global avg_scores
+    global all_scores
+    global x_train
+    global y_train
+
+    plt.subplot(3, 1, 1)
+    x = np.linspace(1, len(all_scores), len(all_scores))
+    plt.plot(x, all_scores, 'o-', color = 'g')
+    plt.xlabel("Games")
+    plt.ylabel("Score")
+    plt.title("Score per game")
+
+    plt.subplot(3, 1, 2)
+    plt.scatter(x_train[y_train==0], y_train[y_train==0], color='r', label='Stay still')
+    plt.scatter(x_train[y_train==1], y_train[y_train==0], color='b', label='Jump')
+    plt.scatter(x_train[y_train==4], y_train[y_train==0], color='g', label='Double jump')
+    plt.xlabel('Distance from the nearest enemy')
+    plt.title('Training data')
+
+    plt.subplot(3, 1, 3)
+    x2 = np.linspace(1, len(average_scores), len(average_scores))
+    plt.plot(x2, average_scores, 'o-', color='b')
+    plt.xlabel("Games")
+    plt.ylabel("Score")
+    plt.title("Average scores per 10 games")
+
+    plt.pause(0.001)
+
 
   def control(self, values):
     global x_train
     global y_train
 
     # Func that is called by the game
-    print(values)
+    print('values:', values)
 
     if values['closest_enemy'] == -1:
       return ACTION
@@ -61,15 +105,16 @@ class Wrapper(object):
         y_train = np.append(y_train, [values['action']])
 
     # The prediction from neural network
+    #print('array: ', np.array([values['closest_enemy']/PERFECT_SCORE, 0, 0, 0, 0]))
     prediction2 = model.predict(np.array([values['closest_enemy']/PERFECT_SCORE]))
-    #print(prediction2)
     prediction = np.argmax(prediction2, axis=1)#model.predict_classes(np.array([[values['closest_enemy']]])/PERFECT_SCORE)
     #print(prediction)
 
-    r = randint(0, 100)
 
     # Add randomness in early stages of training
+    r = randint(0, 100)
     random_rate = 50*(1-games_count/50)
+
 
     if r < random_rate - 20:
       if prediction == ACTION:
@@ -94,7 +139,24 @@ class Wrapper(object):
     global y_train
     global model
 
+    global all_x
+    global all_y
+    global all_scores
+    global average_scores
+    global average_score_rate
+
     games_count += 1
+
+    all_x = np.append(all_x, x_train)
+    all_y = np.append(all_y, y_train)
+
+    all_scores.append(score)
+
+    Wrapper.visualize()
+
+    if games_count is not 0 and games_count % average_score_rate is not 0:
+      average_score = sum(all_scores) / len(all_scores)
+      average_scores.append(average_score)
 
     if games_count is not 0 and games_count % train_frequency is 0:
         # Before training, make the y_train array categorical

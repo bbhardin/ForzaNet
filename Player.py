@@ -50,10 +50,11 @@ class Player(object):
 		self.current_jump_speed = Player.jump_speed
 		self.inair = True
 		if double_jump:
-			print("DOUBLE JUMP IS TRUE")
-			Player.jump_height = 500
+			Player.jump_height = 300
+			Player.jump_speed = 10
 		else:
 			Player.jump_height = 150
+			Player.jump_speed = 5
 		if self.y >= Player.init_y:
 			self.jumping = True
 
