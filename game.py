@@ -1,10 +1,13 @@
 import pygame
 import random
 import copy
+from threading import Thread
 
 from Enemy import Enemy
 import Player as Player
 from Collision import check_collision_between_polygons
+
+import watcher
 
 # Static variables
 enemy_prob = 100
@@ -33,7 +36,7 @@ increase_counter = 0
 action_duration = ((Player.Player.jump_height / Player.Player.jump_speed) * 2 + 2)/increase_counter_divide
 action_counter = 0
 
-clock_tick = 250
+clock_tick = 150
 
 def check_collisions(player, enemies):
 	for enemy in enemies:
@@ -184,7 +187,7 @@ def controlled_run(wrapper, counter):
 	gameEnded = False
 	pygame.init()
 	pygame.font.init()
-	caption = 'Doing something '+str(counter)
+	caption = 'Doing something'#+str(counter)
 	gameDisplay = pygame.display.set_mode((width, height))
 	pygame.display.set_caption(caption)
 	clock = pygame.time.Clock()
@@ -202,6 +205,12 @@ def controlled_run(wrapper, counter):
 
 	old_action = None
 	old_closest_enemy = None
+
+	# Set up the window watcher
+	# watchdog = Thread(target=watcher.capture_window)
+	# watchdog.daemon = True
+	# watchdog.start()
+
 
 	# values = dict()
 	# Main game loop
@@ -278,6 +287,8 @@ def controlled_run(wrapper, counter):
 			old_score = new_score
 			old_closest_enemy = values['closest_enemy']
 
+	# if watchdog:
+	# 	watchdog.join()
 	# pygame.quit()
 	# quit()
 
