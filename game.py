@@ -37,7 +37,7 @@ increase_counter = 0
 action_duration = ((Player.Player.jump_height / Player.Player.jump_speed) * 2 + 2)/increase_counter_divide
 action_counter = 0
 
-clock_tick = 150
+clock_tick = 100
 
 def check_collisions(player, enemies):
 	for enemy in enemies:
@@ -209,9 +209,9 @@ def controlled_run(wrapper, counter):
 
 	# Set up the window watcher
 	# lock = threading.Lock()
-	watchdog = Thread(target=watcher.capture_window)
-	watchdog.daemon = True
-	watchdog.start()
+	# watchdog = Thread(target=watcher.capture_window)
+	# watchdog.daemon = True
+	# watchdog.start()
 
 	# screenshot = cv.imread('enemy.png', cv.IMREAD_UNCHANGED)
 	# if (watcher.screenshot is not None):

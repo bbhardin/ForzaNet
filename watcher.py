@@ -44,7 +44,6 @@ class WindowCapture:
         windows = QZ.CGWindowListCopyWindowInfo(QZ.kCGWindowListOptionAll, QZ.kCGNullWindowID)
         for window in windows:
             name = window.get('kCGWindowName', 'Unknown')
-            print('window name, ', name)
             if name and self.window_name in name:
                 
                 return window
@@ -64,7 +63,8 @@ class WindowCapture:
 
     def get_window_pos_y(self):
         return int(self.window['kCGWindowBounds']['Y'])
-    
+
+    # TODO: May want to make this a static function if possible
     def get_image_from_window(self):
         core_graphics_image = QZ.CGWindowListCreateImage(
             QZ.CGRectNull,
@@ -95,32 +95,34 @@ class WindowCapture:
 
 
 # Detect the enemy (triangle object)
-def enemy_detect():
+def enemy_detect(input):
 
     # TODO: Change to downsize the image so that there's not so much processing power
-    enemy_img = cv.imread('enemy.png', cv.IMREAD_UNCHANGED)
-    result = cv.matchTemplate(enemy_img, '', cv.TM_CCOEFF_NORMED)
+    enemy_img = cv.imread('enemy.jpg', cv.IMREAD_UNCHANGED)
+    # enemy_img = enemy_img.astype(np.uint8)
+    result = cv.matchTemplate(enemy_img, input, cv.TM_CCOEFF_NORMED)
 
     min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result) # best match position
 
-    threshold = 0.85
+    threshold = 0.681
+    # print(max_val)
 
     # if I wanted to get multiple locations
     locations = np.where(result >= threshold)
-    locations = list(zip(*locations[::-1]))    
+    locations = list(zip(*locations[::-1]))  
 
     if max_val >= threshold:
         print("enemy spotted")
 
         top_left = max_loc
-        bottom_rigth = (top_left[0] + enemy_img.shape[1], top_left[1] + enemy_img[0])
+        bottom_right = (top_left[0] + enemy_img.shape[1], top_left[1] + enemy_img.shape[0])
 
+        print(max_loc, bottom_right)
         # Draw a rectangle around the detected enemy
-        cv.rectangle('', max_loc, 0, color=(0, 255, 0), thickness=2, lineType=cv.LINE_4)
-        cv.imshow('Result', '')
+        cv.rectangle(input, max_loc, bottom_right, color=(0, 255, 0), thickness=2, lineType=cv.LINE_4)
+        cv.imshow('Result', input)
         cv.waitKey()
 
-    cv.destroyAllWindows()
 
 def capture_window():
     global screenshot
@@ -135,14 +137,15 @@ def capture_window():
         # In the tutorial he uses pywin32, but I will do something else for my system
         # convert screenshot
 
-
         screenshot = np.array(screenshot)
-        screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
+        # screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
+
+        enemy_detect(screenshot)
 
         cv.imshow('Doing something', screenshot)
 
-        # Ok this now monitors the window in real time. Now I need to draw the square on the
-        # location where we find the enemy to show that enemy has been detected
+        # # Ok this now monitors the window in real time. Now I need to draw the square on the
+        # # location where we find the enemy to show that enemy has been detected
         
         # press 'q' with the output window focused to exit
         if cv.waitKey(1) == ord('q'):
