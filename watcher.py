@@ -8,6 +8,9 @@ from time import sleep
 import numpy as np
 import Quartz as QZ
 
+
+screenshot = []
+
 class WindowCapture:
 
     # properties
@@ -41,6 +44,7 @@ class WindowCapture:
         windows = QZ.CGWindowListCopyWindowInfo(QZ.kCGWindowListOptionAll, QZ.kCGNullWindowID)
         for window in windows:
             name = window.get('kCGWindowName', 'Unknown')
+            print('window name, ', name)
             if name and self.window_name in name:
                 
                 return window
@@ -119,20 +123,26 @@ def enemy_detect():
     cv.destroyAllWindows()
 
 def capture_window():
+    global screenshot
 
     # Find window with name 'Doing something'
     wincap = WindowCapture('Doing something')
     print('Now monitoring the window for enemies')
 
+
     while(True):
-        screenshot = cv.imread('enemy.png', cv.IMREAD_UNCHANGED)#wincap.get_image_from_window()
+        screenshot = wincap.get_image_from_window()
         # In the tutorial he uses pywin32, but I will do something else for my system
         # convert screenshot
-        
-        #screenshot = np.array(screenshot)
-        #screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
 
-        cv.imshow('Hello world', screenshot)
+
+        screenshot = np.array(screenshot)
+        screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
+
+        cv.imshow('Doing something', screenshot)
+
+        # Ok this now monitors the window in real time. Now I need to draw the square on the
+        # location where we find the enemy to show that enemy has been detected
         
         # press 'q' with the output window focused to exit
         if cv.waitKey(1) == ord('q'):

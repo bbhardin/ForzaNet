@@ -2,6 +2,7 @@ import pygame
 import random
 import copy
 from threading import Thread
+import cv2 as cv
 
 from Enemy import Enemy
 import Player as Player
@@ -207,9 +208,24 @@ def controlled_run(wrapper, counter):
 	old_closest_enemy = None
 
 	# Set up the window watcher
-	# watchdog = Thread(target=watcher.capture_window)
-	# watchdog.daemon = True
-	# watchdog.start()
+	# lock = threading.Lock()
+	watchdog = Thread(target=watcher.capture_window)
+	watchdog.daemon = True
+	watchdog.start()
+
+	# screenshot = cv.imread('enemy.png', cv.IMREAD_UNCHANGED)
+	# if (watcher.screenshot is not None):
+	# 	print("not nothing")
+	# 	print(watcher.screenshot)
+	# else:
+	# 	print(watcher.screenshot)
+	
+	# cv.imshow('Doing something', cv.imread('enemy.png', cv.IMREAD_UNCHANGED))
+	# while(True):
+	# 	print("truth")
+	# 	if cv.waitKey(1) == ord('q'):
+	# 		cv.destroyAllWindows()
+	# 		break
 
 
 	# values = dict()
